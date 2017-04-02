@@ -1,6 +1,5 @@
 import os
-from flask import Flask
-from flask import render_template
+from flask import Flask, render_template
 import requests
 import json
 import re
@@ -44,6 +43,7 @@ def get_game_name(app_id):
     if not game_name_regex:
         return None
 
+    #print(game_name_regex.group(1))
     return game_name_regex.group(1)
 
 def load_sce_inventory():
