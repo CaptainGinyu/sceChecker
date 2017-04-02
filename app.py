@@ -1,5 +1,6 @@
 import os
 from flask import Flask
+from flask import render_template
 import requests
 import json
 import re
@@ -46,11 +47,13 @@ def load_sce_inventory():
         prices = json.loads(prices_regex.group(1))
 
 @app.route('/')
+@app.route('/index')
 def home():
 
     load_sce_inventory()
-    game_name = 'GooCubelets 2'
-    return 'Current price for ' + game_name + ' is ' + get_price(get_app_id(game_name))
+    name = 'A Fistful of Gun'
+    game = {'name': name, 'price': get_price(get_app_id(name))}
+    return render_template('index.html', game = game)
 
 if __name__ == '__main__':
     
