@@ -33,6 +33,19 @@ def get_app_id(game_name):
 
     return id_regex.group(1)
 
+def get_game_name(app_id):
+
+    if not sce_content:
+        return None
+
+    pattern = 'appid-' + str(app_id) + '">(.*?)</option>'
+    game_name_regex = re.search(pattern, sce_content)
+
+    if not game_name_regex:
+        return None
+
+    return game_name_regex.group(1)
+
 def load_sce_inventory():
     
     global sce_content, prices
@@ -45,15 +58,15 @@ def load_sce_inventory():
     prices_regex = re.search('var gameprices.*({.*});.*var stocklist', sce_content, re.DOTALL)
     if prices_regex:
         prices = json.loads(prices_regex.group(1))
+        for app_id in list(prices):
+            prices[get_game_name(app_id)] = prices.pop(app_id)
 
 @app.route('/')
 @app.route('/index')
 def home():
 
     load_sce_inventory()
-    name = 'A Fistful of Gun'
-    game = {'name': name, 'price': get_price(get_app_id(name))}
-    return render_template('index.html', game = game)
+    return render_template('index.html', prices = prices)
 
 if __name__ == '__main__':
     

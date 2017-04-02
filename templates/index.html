@@ -1,9 +1,22 @@
 <html>
+<meta charset="utf-8">
 	<head>
 		<title>Steam Card Exchange Price Checker</title>
 	</head>
 	<body>
 		<h1>Steam Card Exchange Price Checker</h1>
-		<p>The current price of {{ game.name }} is {{ game.price }}</p>
+		
+		<table border = "1">
+		<tr>
+			<td><b>Game</b></td>
+			<td><b>Price</b></td>
+		</tr>
+		{% for game, price in prices.items() %}
+			<tr>
+				<td> {{ game }} </td>
+				<td> {{ price }} </td>
+			</tr>
+		{% endfor %}
+		</table>
 	</body>
 </html>
