@@ -43,9 +43,7 @@ def get_game_name(app_id):
     if not game_name_regex:
         return None
 
-    #TODO: this
-    #print(game_name_regex.group(1))
-    return game_name_regex.group(1)
+    return game_name_regex.group(1).encode('utf-8').decode('unicode-escape').encode('latin-1').decode('utf-8')
 
 def load_sce_inventory():
     
