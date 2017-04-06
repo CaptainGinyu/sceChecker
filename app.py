@@ -8,6 +8,7 @@ import re
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 sce_content = None
@@ -16,7 +17,7 @@ prices = None
 class Cardset(db.Model):
     
     __tablename__ = 'cards'
-    game_name = db.Column(db.Text)
+    game_name = db.Column(db.Text, primary_key = True)
     curr_price = db.Column(db.Integer)
     prev_price = db.Column(db.Integer)
 
@@ -73,13 +74,23 @@ def load_sce_inventory():
     prices_regex = re.search('var gameprices.*({.*});.*var stocklist', sce_content, re.DOTALL)
     if prices_regex:
         prices = json.loads(prices_regex.group(1))
+        new_entry_count = 0
         for app_id in list(prices):
             curr_game_name = get_game_name(app_id)
-            prices[curr_game_name] = prices.pop(app_id)
-            if not db.session.query(Cardset).filter(Cardset.game_name == curr_game_name).count():
-                cardset = Cardset(curr_game_name, prices[curr_game_name], 0)
-                db.session.add(cardset)
-                db.session.commit()
+            prices[curr_game_name] = prices.pop(app_id)            
+            #print('Dealing with ' + curr_game_name)
+            #sys.stdout.flush()
+            #if not db.session.query(Cardset).filter(Cardset.game_name == curr_game_name).count():
+                #cardset = Cardset(curr_game_name, prices[curr_game_name], 0)
+                #db.session.add(cardset)
+                #new_entry_count += 1
+                #print('ADDED ' + curr_game_name)
+                #sys.stdout.flush()
+                ##print('current number of new entries: ' + str(new_entry_count))
+                #sys.stdout.flush()
+        #print('COMMITTING...')
+        #sys.stdout.flush()
+        #db.session.commit()
 
 @app.route('/')
 @app.route('/index')
@@ -94,5 +105,5 @@ def home():
 
 if __name__ == '__main__':
     
-    port = int(os.environ.get("PORT", 5000))
+    port = int(os.environ.get("PORT", 5432))
     app.run(host='0.0.0.0', port = port)
