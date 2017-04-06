@@ -1,10 +1,13 @@
 import os
 from flask import Flask, render_template
+from flask.ext.sqlalchemy import SQLAlchemy
 import requests
 import json
 import re
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
+db = SQLAlchemy(app)
 
 sce_content = None
 prices = None
@@ -64,6 +67,7 @@ def load_sce_inventory():
 @app.route('/index')
 def home():
 
+    print('accessed')
     load_sce_inventory()
     return render_template('index.html', prices = prices)
 
