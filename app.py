@@ -1,6 +1,7 @@
 import os
+import sys
 from flask import Flask, render_template
-from flask.ext.sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy
 import requests
 import json
 import re
@@ -68,6 +69,7 @@ def load_sce_inventory():
 def home():
 
     print('accessed')
+    sys.stdout.flush()
     load_sce_inventory()
     return render_template('index.html', prices = prices)
 
