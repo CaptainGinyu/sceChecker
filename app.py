@@ -13,6 +13,18 @@ db = SQLAlchemy(app)
 sce_content = None
 prices = None
 
+class Cardset(db.Model):
+    
+    __tablename__ = 'cards'
+    game_name = db.Column(db.Text)
+    curr_price = db.Column(db.Integer)
+    prev_price = db.Column(db.Integer)
+
+    def __init__(self, game_name, curr_price, prev_price):
+        self.game_name = game_name
+        self.curr_price = curr_price
+        self.prev_price = prev_price
+
 def get_price(app_id):
     
     if not prices:
@@ -62,15 +74,22 @@ def load_sce_inventory():
     if prices_regex:
         prices = json.loads(prices_regex.group(1))
         for app_id in list(prices):
-            prices[get_game_name(app_id)] = prices.pop(app_id)
+            curr_game_name = get_game_name(app_id)
+            prices[curr_game_name] = prices.pop(app_id)
+            if not db.session.query(Cardset).filter(Cardset.game_name == curr_game_name).count():
+                cardset = Cardset(curr_game_name, prices[curr_game_name], 0)
+                db.session.add(cardset)
+                db.session.commit()
 
 @app.route('/')
 @app.route('/index')
 def home():
 
-    print('accessed')
+    print('ACCESSED HOME PAGE!')
     sys.stdout.flush()
     load_sce_inventory()
+    print('LOADED SCE INVENTORY!')
+    sys.stdout.flush()
     return render_template('index.html', prices = prices)
 
 if __name__ == '__main__':
