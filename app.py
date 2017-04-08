@@ -14,6 +14,7 @@ db = SQLAlchemy(app)
 
 sce_content = None
 prices = None
+doing_update_postgres = False
 
 class CardHistory(db.Model):
     
@@ -83,7 +84,9 @@ def load_sce_inventory():
 def update_postgres():
 
     global prices
-
+    
+    doing_update_postgres = True
+    
     prices_row = CardHistory.query.filter_by(label = 'prices').first()
 
     if prices_row:
@@ -93,6 +96,8 @@ def update_postgres():
         db.session.add(CardHistory('prices', prices, None))
 
     db.session.commit()
+
+    doing_update_postgres = False
 
 @app.route('/')
 @app.route('/index')
