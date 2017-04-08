@@ -2,6 +2,7 @@ import os
 import sys
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import exists
 import requests
 import json
 import re
@@ -80,17 +81,24 @@ def load_sce_inventory():
             prices[curr_game_name] = prices.pop(app_id)            
             #print('Dealing with ' + curr_game_name)
             #sys.stdout.flush()
-            #if not db.session.query(Cardset).filter(Cardset.game_name == curr_game_name).count():
-                #cardset = Cardset(curr_game_name, prices[curr_game_name], 0)
-                #db.session.add(cardset)
-                #new_entry_count += 1
+            #if not db.session.query(exists().where(Cardset.game_name == curr_game_name)).scalar():
+            #    cardset = Cardset(curr_game_name, prices[curr_game_name], 0)
+            #    #db.session.add(cardset)
+            #   new_entry_count += 1
                 #print('ADDED ' + curr_game_name)
                 #sys.stdout.flush()
-                ##print('current number of new entries: ' + str(new_entry_count))
-                #sys.stdout.flush()
+            #    print('current number of new entries: ' + str(new_entry_count))
+            #    sys.stdout.flush()
+            
         #print('COMMITTING...')
         #sys.stdout.flush()
         #db.session.commit()
+        #print('new entries: ' + str(new_entry_count))
+        #sys.stdout.flush()
+        result = list(db.session.query(Cardset).filter(Cardset.game_name.in_(['test', 'test 2'])))
+        #result[0].curr_price = 10
+        #db.session.commit()
+        print(result[0].curr_price)
 
 @app.route('/')
 @app.route('/index')
