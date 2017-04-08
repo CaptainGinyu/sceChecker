@@ -2,6 +2,7 @@ import os
 import sys
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 import requests
 import json
 import re
@@ -20,11 +21,13 @@ class CardHistory(db.Model):
     label = db.Column(db.Text, primary_key = True, nullable = False)
     curr_info = db.Column(db.JSON)
     prev_info = db.Column(db.JSON)
+    last_update = db.Column(db.Text)
 
-    def __init__(self, label, curr_info, prev_info):
+    def __init__(self, label, curr_info, prev_info, last_update):
         self.label = label
         self.curr_info = curr_info
         self.prev_info = prev_info
+        self.last_update = last_update
 
 def get_price(app_id):
     
@@ -82,14 +85,16 @@ def load_sce_inventory():
 def update_postgres():
 
     global prices
-    
+
+    update_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     prices_row = CardHistory.query.filter_by(label = 'prices').first()
 
     if prices_row:
         prices_row.prev_info = prices_row.curr_info
-        prices_row.curr_info = prices    
+        prices_row.curr_info = prices
+        prices_row.last_update = update_time
     else:
-        db.session.add(CardHistory('prices', prices, None))
+        db.session.add(CardHistory('prices', prices, None, update_time))
 
     db.session.commit()
 
@@ -99,13 +104,16 @@ def home():
 
     print('ACCESSED HOME PAGE!')
     sys.stdout.flush()
-    load_sce_inventory()
-    print('LOADED SCE INVENTORY!')
-    sys.stdout.flush()
-    update_postgres()
-    print('UPDATED POSTGRES!')
-    sys.stdout.flush()
-    return render_template('index.html', prices = prices)
+    
+    prices_row = CardHistory.query.filter_by(label = 'prices').first()
+    if prices_row:
+        curr_prices = prices_row.curr_info
+        update_time = prices_row.last_update
+    else:
+        curr_prices = {}
+        update_time = 'Have not done first update yet'
+    
+    return render_template('index.html', prices = curr_prices, update_time = update_time)
 
 if __name__ == '__main__':
     
