@@ -15,17 +15,17 @@ db = SQLAlchemy(app)
 sce_content = None
 prices = None
 
-class Cardset(db.Model):
+class CardHistory(db.Model):
     
-    __tablename__ = 'cards'
-    game_name = db.Column(db.Text, primary_key = True)
-    curr_price = db.Column(db.Integer)
-    prev_price = db.Column(db.Integer)
+    __tablename__ = 'card_history'
+    label = db.Column(db.Text, primary_key = True, nullable = False)
+    curr_info = db.Column(db.JSON)
+    prev_info = db.Column(db.JSON)
 
-    def __init__(self, game_name, curr_price, prev_price):
-        self.game_name = game_name
-        self.curr_price = curr_price
-        self.prev_price = prev_price
+    def __init__(self, label, curr_info, prev_info):
+        self.label = label
+        self.curr_info = curr_info
+        self.prev_info = prev_info
 
 def get_price(app_id):
     
@@ -78,27 +78,21 @@ def load_sce_inventory():
         new_entry_count = 0
         for app_id in list(prices):
             curr_game_name = get_game_name(app_id)
-            prices[curr_game_name] = prices.pop(app_id)            
-            #print('Dealing with ' + curr_game_name)
-            #sys.stdout.flush()
-            #if not db.session.query(exists().where(Cardset.game_name == curr_game_name)).scalar():
-            #    cardset = Cardset(curr_game_name, prices[curr_game_name], 0)
-            #    #db.session.add(cardset)
-            #   new_entry_count += 1
-                #print('ADDED ' + curr_game_name)
-                #sys.stdout.flush()
-            #    print('current number of new entries: ' + str(new_entry_count))
-            #    sys.stdout.flush()
-            
-        #print('COMMITTING...')
-        #sys.stdout.flush()
-        #db.session.commit()
-        #print('new entries: ' + str(new_entry_count))
-        #sys.stdout.flush()
-        result = list(db.session.query(Cardset).filter(Cardset.game_name.in_(['test', 'test 2'])))
-        #result[0].curr_price = 10
-        #db.session.commit()
-        print(result[0].curr_price)
+            prices[curr_game_name] = prices.pop(app_id)
+
+def update_postgres():
+
+    global prices
+
+    prices_row = CardHistory.query.filter_by(label = 'prices').first()
+
+    if prices_row:
+        prices_row.prev_info = prices_row.curr_info
+        prices_row.curr_info = prices    
+    else:
+        db.session.add(CardHistory('prices', prices, None))
+
+    db.session.commit()
 
 @app.route('/')
 @app.route('/index')
@@ -108,6 +102,9 @@ def home():
     sys.stdout.flush()
     load_sce_inventory()
     print('LOADED SCE INVENTORY!')
+    sys.stdout.flush()
+    update_postgres()
+    print('UPDATED POSTGRES!')
     sys.stdout.flush()
     return render_template('index.html', prices = prices)
 

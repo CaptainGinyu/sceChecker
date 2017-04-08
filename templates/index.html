@@ -12,7 +12,7 @@
 			<td><b>Game</b></td>
 			<td><b>Price</b></td>
 		</tr>
-		{% for game, price in prices.items() %}
+		{% for game, price in prices.items() | sort(case_sensitive = False) %}
 			<tr>
 				<td> {{ game }} </td>
 				<td> {{ price }} </td>
