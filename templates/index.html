@@ -10,12 +10,30 @@
 		<table border = "1">
 		<tr>
 			<td><b>Game</b></td>
-			<td><b>Price</b></td>
+			<td><b>Current Price</b></td>
+			<td><b>Previous Price</b></td>
+			<td><b>Change</b></td>
 		</tr>
-		{% for game, price in prices.items() | sort(case_sensitive = False) %}
+		{% for game, curr_price in curr_prices.items() | sort(case_sensitive = False) %}
 			<tr>
-				<td> {{ game }} </td>
-				<td> {{ price }} </td>
+				{% set prev_price = prev_prices[game] %}
+				{% set change_status = "Increase" %}
+				
+				{% if curr_price == prev_price %}
+					{% set highlight = "#00ffffff" %}
+					{% set change_status = "" %}
+				{% elif curr_price > prev_price %}
+					{% set highlight = "#a3ffa9" %}
+					{% set change_status = "Increase" %}
+				{% else %}
+					{% set highlight = "#ffa3a3" %}
+					{% set change_status = "Decrease" %}
+				{% endif %}
+				
+				<td><span style = "background-color: {{ highlight }}">{{ game }}</span></td>
+				<td><span style = "background-color: {{ highlight }}">{{ curr_price }}</span></td>
+				<td><span style = "background-color: {{ highlight }}">{{ prev_prices[game] }}</span></td>
+				<td><span style = "background-color: {{ highlight }}">{{ change_status }}</span></td>
 			</tr>
 		{% endfor %}
 		</table>

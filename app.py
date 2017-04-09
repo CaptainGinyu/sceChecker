@@ -108,12 +108,14 @@ def home():
     prices_row = CardHistory.query.filter_by(label = 'prices').first()
     if prices_row:
         curr_prices = prices_row.curr_info
+        prev_prices = prices_row.prev_info
         update_time = prices_row.last_update
     else:
         curr_prices = {}
+        prev_prices = {}
         update_time = 'Have not done first update yet'
     
-    return render_template('index.html', prices = curr_prices, update_time = update_time)
+    return render_template('index.html', curr_prices = curr_prices, prev_prices = prev_prices, update_time = update_time)
 
 if __name__ == '__main__':
     
