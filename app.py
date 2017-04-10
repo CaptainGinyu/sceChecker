@@ -105,7 +105,8 @@ def home():
     print('ACCESSED HOME PAGE!')
     sys.stdout.flush()
     
-    prices_row = CardHistory.query.filter_by(label = 'prices').first()
+    prices_row = CardHistory.query.filter_by(label = 'prices').first()    
+    
     if prices_row:
         curr_prices = prices_row.curr_info
         prev_prices = prices_row.prev_info

@@ -16,10 +16,13 @@
 		</tr>
 		{% for game, curr_price in curr_prices.items() | sort(case_sensitive = False) %}
 			<tr>
-				{% set prev_price = prev_prices[game] %}
-				{% set change_status = "Increase" %}
+				{% if game in prev_prices %}
+					{% set prev_price = prev_prices[game] %}
+				{% else %}
+					{% set prev_price = "None" %}
+				{% endif %}
 				
-				{% if curr_price == prev_price %}
+				{% if (prev_price == "None") or (curr_price == prev_price) %}
 					{% set highlight = "#00ffffff" %}
 					{% set change_status = "" %}
 				{% elif curr_price > prev_price %}
@@ -32,7 +35,7 @@
 				
 				<td><span style = "background-color: {{ highlight }}">{{ game }}</span></td>
 				<td><span style = "background-color: {{ highlight }}">{{ curr_price }}</span></td>
-				<td><span style = "background-color: {{ highlight }}">{{ prev_prices[game] }}</span></td>
+				<td><span style = "background-color: {{ highlight }}">{{ prev_price }}</span></td>
 				<td><span style = "background-color: {{ highlight }}">{{ change_status }}</span></td>
 			</tr>
 		{% endfor %}
