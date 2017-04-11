@@ -6,6 +6,8 @@ from datetime import datetime
 import requests
 import json
 import re
+import urllib.parse
+import math
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
@@ -99,8 +101,7 @@ def update_postgres():
     db.session.commit()
 
 @app.route('/')
-@app.route('/index')
-def home():
+def index():
 
     print('ACCESSED HOME PAGE!')
     sys.stdout.flush()
@@ -117,6 +118,51 @@ def home():
         update_time = 'Have not done first update yet'
     
     return render_template('index.html', curr_prices = curr_prices, prev_prices = prev_prices, update_time = update_time)
+
+@app.route('/steamlvluptosce')
+def steamlvluptosce():
+
+    print('ACCESSED STEAMLVLUP TO SCE PAGE!')
+    sys.stdout.flush()
+
+    prices_row = CardHistory.query.filter_by(label = 'prices').first()    
+    
+    if prices_row:
+        curr_prices = prices_row.curr_info
+        update_time = prices_row.last_update
+    else:
+        curr_prices = {}
+        update_time = 'Have not done first update yet'
+
+    page = 0
+    steamlvlup_url = 'https://steamlvlup.com/shop/items?hide_exist=false&page=' + str(page) + '&sort_by=price&sort_type=asc'
+    steamlvlup_page = requests.get(steamlvlup_url)
+    steamlvlup_json = json.loads(steamlvlup_page.text)
+    steamlvlup_items = steamlvlup_json['items']
+    if type(steamlvlup_items) is dict:
+        steamlvlup_items = steamlvlup_items.values()
+
+    #This is how the STEAMLVLUP guys calculate the last page
+    last_page = math.ceil(steamlvlup_json['max_count'] / 28)
+
+    for page in range(1, last_page):
+        steamlvlup_url = 'https://steamlvlup.com/shop/items?hide_exist=false&page=' + str(page) + '&sort_by=price&sort_type=asc'
+        steamlvlup_page = requests.get(steamlvlup_url)
+        steamlvlup_json = json.loads(steamlvlup_page.text)
+        if not steamlvlup_json['success']:
+            break
+        if type(steamlvlup_json['items']) is dict:
+            steamlvlup_items += steamlvlup_json['items'].values()
+        elif type(steamlvlup_json['items']) is list:
+            steamlvlup_items += steamlvlup_json['items']
+
+    steamlvlup_prices = {}
+    print(steamlvlup_items)
+    for item in steamlvlup_items:
+        curr_item_name = urllib.parse.unquote(item['name'])
+        steamlvlup_prices[curr_item_name] = item['set_price']
+        
+    return render_template('steamlvluptosce.html', steamlvlup_prices = steamlvlup_prices, curr_prices = curr_prices, update_time = update_time)
 
 if __name__ == '__main__':
     

@@ -7,6 +7,8 @@
 		<h1>Steam Card Exchange Price Checker</h1>
 		<p><b>Last update: </b>{{ update_time }}</p>
 		<br>
+		<p><a href="{{ url_for('steamlvluptosce') }}">STEAMLVLUP Prices to Steam Card Exchange Prices</a></p>
+		<br>
 		<table border = "1">
 		<tr>
 			<td><b>Game</b></td>
@@ -22,10 +24,10 @@
 					{% set prev_price = "None" %}
 				{% endif %}
 				
-				{% if (prev_price == "None") or (curr_price == prev_price) %}
+				{% if (prev_price == "None") or (curr_price|int == prev_price|int) %}
 					{% set highlight = "#00ffffff" %}
 					{% set change_status = "" %}
-				{% elif curr_price > prev_price %}
+				{% elif curr_price|int > prev_price|int %}
 					{% set highlight = "#a3ffa9" %}
 					{% set change_status = "Increase" %}
 				{% else %}
