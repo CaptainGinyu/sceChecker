@@ -31,13 +31,31 @@ class CardHistory(db.Model):
         self.prev_info = prev_info
         self.last_update = last_update
 
+def get_num_cards_in_set(app_id):
+
+    if not prices:
+        return 0
+
+    if not app_id:
+        return 0
+
+    pattern = '"' + str(app_id) + '":.?\n?\["(\d*)"'
+    num_cards_regex = re.search(pattern, sce_content)
+
+    if not num_cards_regex:
+        return 0
+
+    return int(num_cards_regex.group(1))
+
 def get_price(app_id):
     
     if not prices:
         print('Could not load the game prices')
+        sys.stdout.flush()
         return None
     if app_id is None:
         print('Could not find the game')
+        sys.stdout.flush()
         return None
     return prices[app_id]
 
@@ -88,6 +106,11 @@ def update_postgres():
 
     global prices
 
+    if not prices:
+        print('Steam Card Exchange was down at ') + datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        sys.stdout.flush()
+        return
+
     update_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
     prices_row = CardHistory.query.filter_by(label = 'prices').first()
 
@@ -137,6 +160,8 @@ def steamlvluptosce():
     page = 0
     steamlvlup_url = 'https://steamlvlup.com/shop/items?hide_exist=false&page=' + str(page) + '&sort_by=price&sort_type=asc'
     steamlvlup_page = requests.get(steamlvlup_url)
+    if steamlvlup_page.status_code != 200:
+        return render_template('steamlvluptosce.html', request_status = 'error', steamlvlup_prices = {}, curr_prices = {}, update_time = update_time)
     steamlvlup_json = json.loads(steamlvlup_page.text)
     steamlvlup_items = steamlvlup_json['items']
     if type(steamlvlup_items) is dict:
@@ -157,12 +182,18 @@ def steamlvluptosce():
             steamlvlup_items += steamlvlup_json['items']
 
     steamlvlup_prices = {}
-    print(steamlvlup_items)
+    sce_card_set_prices = {}
+    load_sce_inventory()
     for item in steamlvlup_items:
-        curr_item_name = urllib.parse.unquote(item['name'])
+        app_id = item['appid']
+        curr_item_name = get_game_name(app_id)
         steamlvlup_prices[curr_item_name] = item['set_price']
+        if curr_item_name not in curr_prices:
+            sce_card_set_prices[curr_item_name] = 0
+        else:
+            sce_card_set_prices[curr_item_name] = get_num_cards_in_set(app_id) * int(curr_prices[curr_item_name])
         
-    return render_template('steamlvluptosce.html', steamlvlup_prices = steamlvlup_prices, curr_prices = curr_prices, update_time = update_time)
+    return render_template('steamlvluptosce.html', request_status = 'success', sce_card_set_prices = sce_card_set_prices, steamlvlup_prices = steamlvlup_prices, curr_prices = curr_prices, update_time = update_time)
 
 if __name__ == '__main__':
     
