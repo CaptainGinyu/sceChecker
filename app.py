@@ -97,10 +97,10 @@ def load_sce_inventory():
     prices_regex = re.search('var gameprices.*({.*});.*var stocklist', sce_content, re.DOTALL)
     if prices_regex:
         prices = json.loads(prices_regex.group(1))
-        new_entry_count = 0
+        
         for app_id in list(prices):
             curr_game_name = get_game_name(app_id)
-            prices[curr_game_name] = prices.pop(app_id)
+            prices[curr_game_name] = int(prices.pop(app_id))
 
 def update_postgres():
 

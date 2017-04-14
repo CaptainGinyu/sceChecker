@@ -35,7 +35,7 @@
 			<td><b>Previous Price</b></td>
 			<td><b>Change</b></td>
 		</tr>
-		{% for game, curr_price in curr_prices.items() | sort(case_sensitive = False) %}
+		{% for game, curr_price in curr_prices | dictsort(case_sensitive = False, by = 'value') %}
 			<tr>
 				{% if game in prev_prices %}
 					{% set prev_price = prev_prices[game] %}

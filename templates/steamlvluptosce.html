@@ -35,7 +35,7 @@
 				<td><b>Current STEAMLVLUP price</b></td>
 				<td><b>Current Steam Card Exchange price</b></td>
 			</tr>
-			{% for game, curr_steamlvlup_price in steamlvlup_prices.items() | sort(case_sensitive = False) %}
+			{% for game, curr_steamlvlup_price in steamlvlup_prices | dictsort(case_sensitive = False, by = 'value') %}
 				<tr>
 					<td>{{ game }}</td>
 					<td>{{ curr_steamlvlup_price }}</td>
