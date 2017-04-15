@@ -21,6 +21,9 @@
 		<link rel="apple-touch-icon" sizes="152x152" href="{{ url_for('static', filename= 'favicon-152.png') }}">
 		<link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename= 'favicon-180.png') }}">
 		<!-- ****** faviconit.com favicons ****** -->
+		<script type = "text/javascript" src = "{{ url_for('static', filename = 'jquery-3.2.1.min.js') }}"></script>
+		<script type = "text/javascript" src = "{{ url_for('static', filename = 'jquery.tablesorter.js') }}"></script>
+		<link rel = "stylesheet" href = "{{ url_for('static', filename = 'style.css') }}" type = "text/css" />
 	</head>
 	<body>
 		<h1>STEAMLVLUP Prices to Steam Card Exchange Prices</h1>
@@ -29,22 +32,34 @@
 		<p><a href="{{ url_for('index') }}">Home</a></p>
 		<br>
 		{% if request_status == 'success' %}		
-			<table border = "1">
-			<tr>
-				<td><b>Game</b></td>
-				<td><b>Current STEAMLVLUP price</b></td>
-				<td><b>Current Steam Card Exchange price</b></td>
-			</tr>
-			{% for game, curr_steamlvlup_price in steamlvlup_prices | dictsort(case_sensitive = False, by = 'value') %}
-				<tr>
-					<td>{{ game }}</td>
-					<td>{{ curr_steamlvlup_price }}</td>
-					<td>{{ sce_card_set_prices[game] }}</td>
-				</tr>
-			{% endfor %}
+			<table id = "steamlvlupToScePrices" class = "tablesorter" border = "1">
+				<thead>
+					<tr>
+						<th>Game</th>
+						<th>Current STEAMLVLUP price</th>
+						<th>Current Steam Card Exchange price</th>
+					</tr>
+				</thead>
+				<tbody>
+				{% for game, curr_steamlvlup_price in steamlvlup_prices | dictsort(case_sensitive = False, by = 'value') %}
+					<tr>
+						<td>{{ game }}</td>
+						<td>{{ curr_steamlvlup_price }}</td>
+						<td>{{ sce_card_set_prices[game] }}</td>
+					</tr>
+				{% endfor %}
+				</tbody>
 			</table>
+			<script type = "text/javascript">
+				$(document).ready(
+					function() 
+					{ 
+						$("#steamlvlupToScePrices").tablesorter(); 
+					} 
+				); 
+			</script>
 		{% else %}
 			<p>The STEAMLVLUP site seems to be having issues.</p>
-		{% endif %}
+		{% endif %}		
 	</body>
 </html>

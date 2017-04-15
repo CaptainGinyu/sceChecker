@@ -1,0 +1,28 @@
+table.tablesorter {
+	font-size: 12px;
+	background-color: #FFFFFF;
+	width: 1024px;
+	border: 1px solid #000000;
+}
+table.tablesorter th {
+	text-align: left;
+	padding: 5px;
+}
+table.tablesorter td {
+	padding: 5px;
+}
+table.tablesorter .header {
+	background-image: url(bg.png);
+	background-repeat: no-repeat;
+	padding-left: 30px;
+	padding-top: 8px;
+	height: auto;
+}
+table.tablesorter .headerSortUp {
+	background-image: url(asc.png);
+	background-repeat: no-repeat;
+}
+table.tablesorter .headerSortDown {
+	background-image: url(desc.png);
+	background-repeat: no-repeat;
+}

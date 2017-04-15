@@ -21,6 +21,9 @@
 		<link rel="apple-touch-icon" sizes="152x152" href="{{ url_for('static', filename= 'favicon-152.png') }}">
 		<link rel="apple-touch-icon" sizes="180x180" href="{{ url_for('static', filename= 'favicon-180.png') }}">
 		<!-- ****** faviconit.com favicons ****** -->
+		<script type = "text/javascript" src = "{{ url_for('static', filename = 'jquery-3.2.1.min.js') }}"></script>
+		<script type = "text/javascript" src = "{{ url_for('static', filename = 'jquery.tablesorter.js') }}"></script>
+		<link rel = "stylesheet" href = "{{ url_for('static', filename = 'style.css') }}" type = "text/css" />
 	</head>
 	<body>
 		<h1>Steam Card Exchange Price Checker</h1>
@@ -28,38 +31,50 @@
 		<br>
 		<p><a href="{{ url_for('steamlvluptosce') }}">STEAMLVLUP Prices to Steam Card Exchange Prices</a></p>
 		<br>
-		<table border = "1">
-		<tr>
-			<td><b>Game</b></td>
-			<td><b>Current Price</b></td>
-			<td><b>Previous Price</b></td>
-			<td><b>Change</b></td>
-		</tr>
-		{% for game, curr_price in curr_prices | dictsort(case_sensitive = False, by = 'value') %}
-			<tr>
-				{% if game in prev_prices %}
-					{% set prev_price = prev_prices[game] %}
-				{% else %}
-					{% set prev_price = "None" %}
-				{% endif %}
-				
-				{% if (prev_price == "None") or (curr_price|int == prev_price|int) %}
-					{% set highlight = "#00ffffff" %}
-					{% set change_status = "" %}
-				{% elif curr_price|int > prev_price|int %}
-					{% set highlight = "#a3ffa9" %}
-					{% set change_status = "Increase" %}
-				{% else %}
-					{% set highlight = "#ffa3a3" %}
-					{% set change_status = "Decrease" %}
-				{% endif %}
-				
-				<td><span style = "background-color: {{ highlight }}">{{ game }}</span></td>
-				<td><span style = "background-color: {{ highlight }}">{{ curr_price }}</span></td>
-				<td><span style = "background-color: {{ highlight }}">{{ prev_price }}</span></td>
-				<td><span style = "background-color: {{ highlight }}">{{ change_status }}</span></td>
-			</tr>
-		{% endfor %}
+		<table id = "scePrices" class = "tablesorter" border = "1">
+			<thead>
+				<tr>
+					<th>Game</th>
+					<th>Current Price</th>
+					<th>Previous Price</th>
+					<th>Change</th>
+				</tr>
+			</thead>
+			<tbody>
+				{% for game, curr_price in curr_prices | dictsort(case_sensitive = False, by = 'value') %}
+					<tr>
+						{% if game in prev_prices %}
+							{% set prev_price = prev_prices[game] %}
+						{% else %}
+							{% set prev_price = "None" %}
+						{% endif %}
+						
+						{% if (prev_price == "None") or (curr_price|int == prev_price|int) %}
+							{% set highlight = "#00ffffff" %}
+							{% set change_status = "" %}
+						{% elif curr_price|int > prev_price|int %}
+							{% set highlight = "#a3ffa9" %}
+							{% set change_status = "Increase" %}
+						{% else %}
+							{% set highlight = "#ffa3a3" %}
+							{% set change_status = "Decrease" %}
+						{% endif %}
+						
+						<td><span style = "background-color: {{ highlight }}">{{ game }}</span></td>
+						<td><span style = "background-color: {{ highlight }}">{{ curr_price }}</span></td>
+						<td><span style = "background-color: {{ highlight }}">{{ prev_price }}</span></td>
+						<td><span style = "background-color: {{ highlight }}">{{ change_status }}</span></td>
+					</tr>
+				{% endfor %}
+			</tbody>
 		</table>
+		<script type = "text/javascript">
+			$(document).ready(
+				function() 
+				{ 
+					$("#scePrices").tablesorter(); 
+				} 
+			); 
+		</script>
 	</body>
 </html>
