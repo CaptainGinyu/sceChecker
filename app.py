@@ -158,28 +158,20 @@ def steamlvluptosce():
         update_time = 'Have not done first update yet'
 
     page = 0
-    steamlvlup_url = 'https://steamlvlup.com/shop/items?hide_exist=false&page=' + str(page) + '&sort_by=price&sort_type=asc'
-    steamlvlup_page = requests.get(steamlvlup_url)
+    steamlvlup_page = requests.get('https://steamlvlup.com/shop/items?hide_exist=false&page_size=999&page=' + str(page) + '&sort_by=price&sort_type=asc')
     if steamlvlup_page.status_code != 200:
         return render_template('steamlvluptosce.html', request_status = 'error', steamlvlup_prices = {}, curr_prices = {}, update_time = update_time)
     steamlvlup_json = json.loads(steamlvlup_page.text)
-    steamlvlup_items = steamlvlup_json['items']
-    if type(steamlvlup_items) is dict:
-        steamlvlup_items = steamlvlup_items.values()
-
-    #This is how the STEAMLVLUP guys calculate the last page
-    last_page = math.ceil(steamlvlup_json['max_count'] / 28)
-
-    for page in range(1, last_page):
-        steamlvlup_url = 'https://steamlvlup.com/shop/items?hide_exist=false&page=' + str(page) + '&sort_by=price&sort_type=asc'
-        steamlvlup_page = requests.get(steamlvlup_url)
+    steamlvlup_count = steamlvlup_json['count']
+    steamlvlup_items = steamlvlup_json['items']    
+    while steamlvlup_count > 0:
+        page += 1
+        steamlvlup_page = requests.get('https://steamlvlup.com/shop/items?hide_exist=false&page_size=999&page=' + str(page) + '&sort_by=price&sort_type=asc')
+        if steamlvlup_page.status_code != 200:
+            return render_template('steamlvluptosce.html', request_status = 'error', steamlvlup_prices = {}, curr_prices = {}, update_time = update_time)
         steamlvlup_json = json.loads(steamlvlup_page.text)
-        if not steamlvlup_json['success']:
-            break
-        if type(steamlvlup_json['items']) is dict:
-            steamlvlup_items += steamlvlup_json['items'].values()
-        elif type(steamlvlup_json['items']) is list:
-            steamlvlup_items += steamlvlup_json['items']
+        steamlvlup_count = steamlvlup_json['count']
+        steamlvlup_items += steamlvlup_json['items']
 
     steamlvlup_prices = {}
     sce_card_set_prices = {}
