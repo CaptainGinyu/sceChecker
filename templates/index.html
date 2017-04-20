@@ -31,6 +31,22 @@
 		<br>
 		<p><a href="{{ url_for('steamlvluptosce') }}">STEAMLVLUP Prices to Steam Card Exchange Prices</a></p>
 		<br>
+		<label for = "Game">Filter by Game Name:</label>
+		<input type = "text" id = "Game" onkeyup = "filter()" placeholder = "Filter by Game Name...">
+		<br>
+		<br>
+		<label for = "Current Price">Filter by Current Price:</label>
+		<input type = "text" id = "Current Price" onkeyup = "filter()" placeholder = "Filter by Current Price...">
+		<br>
+		<br>
+		<label for = "Previous Price">Filter by Previous Price:</label>
+		<input type = "text" id = "Previous Price" onkeyup = "filter()" placeholder = "Filter by Previous Price...">
+		<br>
+		<br>
+		<label for = "Price Status">Filter by Price Status:</label>
+		<input type = "text" id = "Price Status" onkeyup = "filter()" placeholder = "Filter by Price Status...">
+		<br>
+		<br>
 		<table id = "scePrices" class = "tablesorter" border = "1">
 			<thead>
 				<tr>
@@ -42,28 +58,27 @@
 			</thead>
 			<tbody>
 				{% for game, curr_price in curr_prices | dictsort(case_sensitive = False, by = 'value') %}
-					<tr>
-						{% if game in prev_prices %}
-							{% set prev_price = prev_prices[game] %}
-						{% else %}
-							{% set prev_price = "None" %}
-						{% endif %}
-						
-						{% if (prev_price == "None") or (curr_price|int == prev_price|int) %}
-							{% set highlight = "#00ffffff" %}
-							{% set change_status = "" %}
-						{% elif curr_price|int > prev_price|int %}
-							{% set highlight = "#a3ffa9" %}
-							{% set change_status = "Increase" %}
-						{% else %}
-							{% set highlight = "#ffa3a3" %}
-							{% set change_status = "Decrease" %}
-						{% endif %}
-						
-						<td><span style = "background-color: {{ highlight }}">{{ game }}</span></td>
-						<td><span style = "background-color: {{ highlight }}">{{ curr_price }}</span></td>
-						<td><span style = "background-color: {{ highlight }}">{{ prev_price }}</span></td>
-						<td><span style = "background-color: {{ highlight }}">{{ change_status }}</span></td>
+					{% if game in prev_prices %}
+						{% set prev_price = prev_prices[game] %}
+					{% else %}
+						{% set prev_price = "None" %}
+					{% endif %}
+					
+					{% if (prev_price == "None") or (curr_price|int == prev_price|int) %}
+						{% set price_change_status = "" %}
+						{% set background_color = "transparent" %}
+					{% elif curr_price|int > prev_price|int %}
+						{% set price_change_status = "Increase" %}
+						{% set background_color = "#a3ffa9" %}
+					{% else %}
+						{% set price_change_status = "Decrease" %}
+						{% set background_color = "#ffa3a3" %}
+					{% endif %}
+					<tr style = "background-color: {{ background_color }}">
+						<td>{{ game }}</td>
+						<td>{{ curr_price }}</td>
+						<td>{{ prev_price }}</td>
+						<td>{{ price_change_status }}</td>
 					</tr>
 				{% endfor %}
 			</tbody>
@@ -74,7 +89,44 @@
 				{ 
 					$("#scePrices").tablesorter(); 
 				} 
-			); 
+			);
+
+			function filter()
+			{
+				var gameQuery = document.getElementById("Game").value.toUpperCase();
+				var currPriceQuery = document.getElementById("Current Price").value;
+				var prevPriceQuery = document.getElementById("Previous Price").value;
+				var priceStatusQuery = document.getElementById("Price Status").value.toUpperCase();
+				
+				var rows = document.getElementById("scePrices").getElementsByTagName("tr");
+				
+				for (var i = 0; i < rows.length; i++)
+				{
+					var currElem = rows[i];
+					
+					var gameQueryCell = currElem.getElementsByTagName("td")[0];
+					var currPriceQueryCell = currElem.getElementsByTagName("td")[1];
+					var prevPriceQueryCell = currElem.getElementsByTagName("td")[2];
+					var priceStatusQueryCell = currElem.getElementsByTagName("td")[3];
+					
+					if (gameQueryCell && currPriceQueryCell && prevPriceQueryCell && priceStatusQueryCell)
+					{
+						var gameQueryMatch = (gameQueryCell.innerHTML.toUpperCase().indexOf(gameQuery) > -1) || (gameQuery.length == 0);
+						var currPriceQueryMatch = (currPriceQueryCell.innerHTML.indexOf(currPriceQuery) > -1) || (currPriceQuery.length == 0);
+						var prevPriceQueryMatch = (prevPriceQueryCell.innerHTML.indexOf(prevPriceQuery) > -1) || (prevPriceQueryCell == 0);
+						var priceStatusQueryMatch = (priceStatusQueryCell.innerHTML.toUpperCase().indexOf(priceStatusQuery) > -1) || (priceStatusQueryCell == 0);
+						
+						if (gameQueryMatch && currPriceQueryMatch && prevPriceQueryMatch && priceStatusQueryMatch)
+						{
+							currElem.style.display = "";
+						}
+						else
+						{
+							currElem.style.display = "none";
+						}
+					}
+				}
+			}
 		</script>
 	</body>
 </html>
