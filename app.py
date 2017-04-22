@@ -39,7 +39,7 @@ def get_num_cards_in_set(app_id):
     if not app_id:
         return 0
 
-    pattern = '"' + str(app_id) + '":.?\n?\["(\d*)"'
+    pattern = '"set-' + str(app_id) + '">.*?of (\d) Cards'
     num_cards_regex = re.search(pattern, sce_content)
 
     if not num_cards_regex:
