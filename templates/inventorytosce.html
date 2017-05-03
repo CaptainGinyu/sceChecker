@@ -23,47 +23,68 @@
 		<!-- ****** faviconit.com favicons ****** -->
 		<script type = "text/javascript" src = "{{ url_for('static', filename = 'jquery-3.2.1.min.js') }}"></script>
 		<script type = "text/javascript" src = "{{ url_for('static', filename = 'jquery.tablesorter.js') }}"></script>
+		<script type="text/javascript">var $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};</script>
 		<link rel = "stylesheet" href = "{{ url_for('static', filename = 'style.css') }}" type = "text/css" />
 	</head>
 	<body>
-		<h1>STEAMLVLUP Prices to Steam Card Exchange Prices</h1>
-		<p><b>Last update: </b>{{ update_time }}</p>
-		<br>
+		<h1>Steam Card Exchange Price Checker</h1>
 		<p><a href="{{ url_for('index') }}">Home</a></p>
 		<br>
 		<p><a href="{{ url_for('steamlvluptosce') }}">STEAMLVLUP Prices to Steam Card Exchange Prices</a></p>
 		<br>
 		<p><a href = "{{ url_for('steam_inventory_to_sce_prices') }}">Steam Inventory Cards to Steam Card Exchange Prices</a></p>
 		<br>
-		{% if request_status == 'success' %}		
-			<table id = "steamlvlupToScePrices" class = "tablesorter" border = "1">
-				<thead>
-					<tr>
-						<th>Game</th>
-						<th>Current STEAMLVLUP price</th>
-						<th>Current Steam Card Exchange price</th>
-					</tr>
-				</thead>
-				<tbody>
-				{% for game, curr_steamlvlup_price in steamlvlup_prices | dictsort(case_sensitive = False, by = 'value') %}
-					<tr>
-						<td>{{ game }}</td>
-						<td>{{ curr_steamlvlup_price }}</td>
-						<td>{{ sce_card_set_prices[game] }}</td>
-					</tr>
-				{% endfor %}
-				</tbody>
-			</table>
-			<script type = "text/javascript">
-				$(document).ready(
-					function() 
-					{ 
-						$("#steamlvlupToScePrices").tablesorter(); 
-					} 
-				); 
-			</script>
-		{% else %}
-			<p>The STEAMLVLUP site seems to be having issues.</p>
-		{% endif %}		
+		<br>
+		<label for "steam_id">Enter Steam ID of a user:</label>
+		<input type = "text" id = "steam_id" placeholder = "Steam ID...">
+		<button type = "button" id = "submitButton">Get Steam Card Exchange Prices</button>
+		<br>
+		<div id = "inventoryToSce"></div>
+		
+		<script type = "text/javascript">
+			$(document).ready(
+				function()
+				{
+					$("#submitButton").click(
+						function()
+						{
+							$("#submitButton").prop("disabled", true);
+							
+							$.post($SCRIPT_ROOT + '/steam_inventory_to_sce_prices',
+							{
+								steam_id: $("#steam_id").val()
+							},
+							function(response)
+							{
+								if (typeof response == 'object')
+								{
+									var priceTable = '<table id = "prices" class = "tablesorter" border = "1">'
+										+ '<thead><tr>'
+										+ '<th>Game</th>'
+										+ '<th>Price</th>'
+										+ '<th>Unique Cards</th>'
+										+ '</tr></thead><tbody>';
+									
+									for (var game in response)
+									{
+										if (response.hasOwnProperty(game))
+										{
+											priceTable += '<tr><td>' + game + '</td><td>' + response[game][0] + '</td><td>' + response[game][1] + '</td></tr>';
+										}
+									}
+									
+									priceTable += '</tbody></table>';
+									
+									$("#inventoryToSce").html(priceTable);
+								}
+								
+								$("#submitButton").prop("disabled", false);
+								$("#prices").tablesorter();
+							});
+						}
+					);
+				}
+			);
+		</script>
 	</body>
 </html>

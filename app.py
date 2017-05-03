@@ -1,6 +1,6 @@
 import os
 import sys
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import requests
@@ -47,17 +47,17 @@ def get_num_cards_in_set(app_id):
 
     return int(num_cards_regex.group(1))
 
-def get_price(app_id):
+def get_price(game_name):
     
     if not prices:
         print('Could not load the game prices')
         sys.stdout.flush()
         return None
-    if app_id is None:
-        print('Could not find the game')
+    if (game_name is None) or (game_name not in prices):
+        print('Could not find the game: "' + game_name + '"')
         sys.stdout.flush()
         return None
-    return prices[app_id]
+    return prices[game_name]
 
 def get_app_id(game_name):
 
@@ -122,6 +122,74 @@ def update_postgres():
         db.session.add(CardHistory('prices', prices, None, update_time))
 
     db.session.commit()
+
+def get_steam_inventory_cards(cards, steam_id, last_assetid):
+    
+    steam_inventory_url = 'http://steamcommunity.com/inventory/' + str(steam_id) + '/753/6?l=english&count=5000'
+    if last_assetid is not None:
+        steam_inventory_url += '&start_assetid=' + str(last_assetid)
+    
+    steam_inventory_request = requests.get(steam_inventory_url)
+    
+    if steam_inventory_request.status_code != 200:
+        return (cards, None)
+
+    if steam_inventory_request.text == 'null':
+        return (cards, None)
+
+    steam_inventory_json = json.loads(steam_inventory_request.text)
+    
+    if steam_inventory_json['success'] != 1:
+        return (cards, None)
+    
+    steam_inventory_items = steam_inventory_json['descriptions']
+    
+    if last_assetid is not None:
+        steam_inventory_items = steam_inventory_items[1:]
+
+    for item in steam_inventory_items:
+        if item['tags'][2]['localized_tag_name'] == 'Normal':
+            trading_card_regex = re.search('(.*) Trading Card', item['type'])
+            if trading_card_regex:
+                curr_game = trading_card_regex.group(1)
+
+                #In case the Steam inventory API has a space added at the end for no reason, as is the case for the Jim Power game
+                if curr_game[len(curr_game) - 1] == ' ':
+                    curr_game = curr_game[:len(curr_game) - 1]
+                
+                if curr_game in cards:
+                    cards[curr_game][1] += 1
+                else:
+                    cards[curr_game] = [get_price(curr_game), 1]
+    
+    if 'last_assetid' in steam_inventory_json:
+        result = (cards, steam_inventory_json['last_assetid'])
+    else:
+        result = (cards, None)
+
+    return result
+
+@app.route('/steam_inventory_to_sce_prices', methods = ['GET', 'POST'])
+def steam_inventory_to_sce_prices():
+
+    if request.method == 'GET':
+        return render_template('inventorytosce.html')
+    
+    steam_id = request.form.get('steam_id')
+
+    #Keys are game names, values are number of unique cards owned for a given game
+    cards = {}
+    
+    last_assetid = None
+
+    load_sce_inventory()
+
+    cards, last_assetid = get_steam_inventory_cards(cards, steam_id, None)
+
+    while last_assetid is not None:
+        cards, last_assetid = get_steam_inventory_cards(cards, steam_id, last_assetid)
+    
+    return jsonify(cards)
 
 @app.route('/')
 def index():
