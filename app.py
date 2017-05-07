@@ -33,7 +33,7 @@ class CardHistory(db.Model):
 
 def get_num_cards_in_set(app_id):
 
-    if not prices:
+    if not sce_content:
         return 0
 
     if not app_id:
@@ -47,7 +47,12 @@ def get_num_cards_in_set(app_id):
 
     return int(num_cards_regex.group(1))
 
-def get_price(game_name):
+def get_price(game_name, prices_row_curr_info = None):
+
+    if prices_row_curr_info:
+        if game_name in prices_row_curr_info:
+            return prices_row_curr_info[game_name]
+        return None
     
     if not prices:
         print('Could not load the game prices')
@@ -123,7 +128,7 @@ def update_postgres():
 
     db.session.commit()
 
-def get_steam_inventory_cards(cards, steam_id, last_assetid):
+def get_steam_inventory_cards(cards, steam_id, last_assetid, prices_row_curr_info):
     
     steam_inventory_url = 'http://steamcommunity.com/inventory/' + str(steam_id) + '/753/6?l=english&count=5000'
     if last_assetid is not None:
@@ -160,7 +165,7 @@ def get_steam_inventory_cards(cards, steam_id, last_assetid):
                 if curr_game in cards:
                     cards[curr_game][1] += 1
                 else:
-                    cards[curr_game] = [get_price(curr_game), 1]
+                    cards[curr_game] = [get_price(curr_game, prices_row_curr_info), 1]
     
     if 'last_assetid' in steam_inventory_json:
         result = (cards, steam_inventory_json['last_assetid'])
@@ -182,12 +187,17 @@ def steam_inventory_to_sce_prices():
     
     last_assetid = None
 
-    load_sce_inventory()
+    prices_row = CardHistory.query.filter_by(label = 'prices').first()
 
-    cards, last_assetid = get_steam_inventory_cards(cards, steam_id, None)
+    if prices_row:
+        prices_row_curr_info = prices_row.curr_info
+    else:
+        prices_row_curr_info = None
+
+    cards, last_assetid = get_steam_inventory_cards(cards, steam_id, None, prices_row_curr_info)
 
     while last_assetid is not None:
-        cards, last_assetid = get_steam_inventory_cards(cards, steam_id, last_assetid)
+        cards, last_assetid = get_steam_inventory_cards(cards, steam_id, last_assetid, prices_row_curr_info)
     
     return jsonify(cards)
 

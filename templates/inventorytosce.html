@@ -49,6 +49,7 @@
 						function()
 						{
 							$("#submitButton").prop("disabled", true);
+							$("#submitButton").html("Loading...");
 							
 							$.post($SCRIPT_ROOT + '/steam_inventory_to_sce_prices',
 							{
@@ -79,6 +80,7 @@
 								}
 								
 								$("#submitButton").prop("disabled", false);
+								$("#submitButton").html("Get Steam Card Exchange Prices");
 								$("#prices").tablesorter();
 							});
 						}
