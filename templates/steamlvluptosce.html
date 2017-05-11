@@ -23,47 +23,79 @@
 		<!-- ****** faviconit.com favicons ****** -->
 		<script type = "text/javascript" src = "{{ url_for('static', filename = 'jquery-3.2.1.min.js') }}"></script>
 		<script type = "text/javascript" src = "{{ url_for('static', filename = 'jquery.tablesorter.js') }}"></script>
+		<script type="text/javascript">
+			var $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
+			var loadingImage = "{{ url_for('static', filename = 'loading.gif') }}";
+		</script>
 		<link rel = "stylesheet" href = "{{ url_for('static', filename = 'style.css') }}" type = "text/css" />
 	</head>
 	<body>
 		<h1>STEAMLVLUP Prices to Steam Card Exchange Prices</h1>
-		<p><b>Last update: </b>{{ update_time }}</p>
-		<br>
+		<div id = "updateTime"></div>
 		<p><a href="{{ url_for('index') }}">Home</a></p>
 		<br>
 		<p><a href="{{ url_for('steamlvluptosce') }}">STEAMLVLUP Prices to Steam Card Exchange Prices</a></p>
 		<br>
 		<p><a href = "{{ url_for('steam_inventory_to_sce_prices') }}">Steam Inventory Cards to Steam Card Exchange Prices</a></p>
 		<br>
-		{% if request_status == 'success' %}		
-			<table id = "steamlvlupToScePrices" class = "tablesorter" border = "1">
-				<thead>
-					<tr>
-						<th>Game</th>
-						<th>Current STEAMLVLUP price</th>
-						<th>Current Steam Card Exchange price</th>
-					</tr>
-				</thead>
-				<tbody>
-				{% for game, curr_steamlvlup_price in steamlvlup_prices | dictsort(case_sensitive = False, by = 'value') %}
-					<tr>
-						<td>{{ game }}</td>
-						<td>{{ curr_steamlvlup_price }}</td>
-						<td>{{ sce_card_set_prices[game] }}</td>
-					</tr>
-				{% endfor %}
-				</tbody>
-			</table>
-			<script type = "text/javascript">
-				$(document).ready(
-					function() 
-					{ 
-						$("#steamlvlupToScePrices").tablesorter(); 
-					} 
-				); 
-			</script>
-		{% else %}
-			<p>The STEAMLVLUP site seems to be having issues.</p>
-		{% endif %}		
+		<div id = "steamlvlupToSce"></div>
+		
+		<script type = "text/javascript">
+			function loadPrices()
+			{
+				$("#steamlvlupToSce").html('<img src = ' + loadingImage + '></img>');
+			
+				$.post($SCRIPT_ROOT + '/steamlvluptosce',
+				{
+					
+				},
+				function(response)
+				{
+					if (typeof response == 'object')
+					{
+						if (response['request_status'] == 'success')
+						{
+							var priceTable = '<table id = "prices" class = "tablesorter" border = "1">'
+								+ '<thead><tr>'
+								+ '<th>Game</th>'
+								+ '<th>Current STEAMLVLUP price</th>'
+								+ '<th>Current Steam Card Exchange price</th>'
+								+ '</tr></thead><tbody>';
+								
+							var steamlvlupPrices = response['steamlvlup_prices'];
+							
+							for (var game in steamlvlupPrices)
+							{
+								if (steamlvlupPrices.hasOwnProperty(game))
+								{
+									priceTable += '<tr><td>' + game + '</td><td>' + steamlvlupPrices[game] + '</td><td>' + response['sce_card_set_prices'][game] + '</td></tr>';
+								}
+							}
+							
+							priceTable += '</tbody></table>';
+							$("#steamlvlupToSce").html(priceTable);
+							$("#prices").tablesorter();
+							
+							$("#updateTime").html("<p><b>Last update: </b>" + response['update_time'] + "</p>");
+						}
+						else
+						{
+							$("#steamlvlupToSce").html('<p>The STEAMLVLUP site seems to be having issues.</p>');
+						}
+					}
+					else
+					{
+						$("#steamlvlupToSce").html('<p>Server-side code has issues.</p>');
+					}
+				});
+			}
+		
+			$(document).ready(
+				function() 
+				{
+					loadPrices();
+				} 
+			); 
+		</script>
 	</body>
 </html>

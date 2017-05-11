@@ -39,7 +39,7 @@ def get_num_cards_in_set(app_id):
     if not app_id:
         return 0
 
-    pattern = '"set-' + str(app_id) + '">.*?of (\d) Cards'
+    pattern = '"set-' + str(app_id) + '">.*?of (\d+) Cards'
     num_cards_regex = re.search(pattern, sce_content)
 
     if not num_cards_regex:
@@ -203,9 +203,6 @@ def steam_inventory_to_sce_prices():
 
 @app.route('/')
 def index():
-
-    print('ACCESSED HOME PAGE!')
-    sys.stdout.flush()
     
     prices_row = CardHistory.query.filter_by(label = 'prices').first()    
     
@@ -220,11 +217,11 @@ def index():
     
     return render_template('index.html', curr_prices = curr_prices, prev_prices = prev_prices, update_time = update_time)
 
-@app.route('/steamlvluptosce')
+@app.route('/steamlvluptosce', methods = ['GET', 'POST'])
 def steamlvluptosce():
 
-    print('ACCESSED STEAMLVLUP TO SCE PAGE!')
-    sys.stdout.flush()
+    if request.method == 'GET':
+        return render_template('steamlvluptosce.html')
 
     prices_row = CardHistory.query.filter_by(label = 'prices').first()    
     
@@ -263,7 +260,7 @@ def steamlvluptosce():
         else:
             sce_card_set_prices[curr_item_name] = get_num_cards_in_set(app_id) * int(curr_prices[curr_item_name])
         
-    return render_template('steamlvluptosce.html', request_status = 'success', sce_card_set_prices = sce_card_set_prices, steamlvlup_prices = steamlvlup_prices, curr_prices = curr_prices, update_time = update_time)
+    return jsonify(request_status = 'success', sce_card_set_prices = sce_card_set_prices, steamlvlup_prices = steamlvlup_prices, update_time = update_time)
 
 if __name__ == '__main__':
     
