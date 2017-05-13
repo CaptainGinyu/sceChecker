@@ -25,7 +25,6 @@
 		<script type = "text/javascript" src = "{{ url_for('static', filename = 'jquery.tablesorter.js') }}"></script>
 		<script type="text/javascript">
 			var $SCRIPT_ROOT = {{ request.script_root|tojson|safe }};
-			var loadingImage = "{{ url_for('static', filename = 'loading.gif') }}";
 		</script>
 		<link rel = "stylesheet" href = "{{ url_for('static', filename = 'style.css') }}" type = "text/css" />
 	</head>
@@ -43,7 +42,7 @@
 		<script type = "text/javascript">
 			function loadPrices()
 			{
-				$("#steamlvlupToSce").html('<img src = ' + loadingImage + '></img>');
+				$("#steamlvlupToSce").html('<div class="loader">Loading...</div>');
 			
 				$.post($SCRIPT_ROOT + '/steamlvluptosce',
 				{
