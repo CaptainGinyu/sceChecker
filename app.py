@@ -147,6 +147,9 @@ def get_steam_inventory_cards(cards, steam_id, last_assetid, prices_row_curr_inf
     if steam_inventory_json['success'] != 1:
         return (cards, None)
     
+    if 'descriptions' not in steam_inventory_json:
+        return (cards, None)
+
     steam_inventory_items = steam_inventory_json['descriptions']
     
     if last_assetid is not None:
