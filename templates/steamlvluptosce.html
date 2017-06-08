@@ -67,7 +67,8 @@
 							{
 								if (steamlvlupPrices.hasOwnProperty(game))
 								{
-									priceTable += '<tr><td>' + game + '</td><td>' + steamlvlupPrices[game] + '</td><td>' + response['sce_card_set_prices'][game] + '</td></tr>';
+									var sceInfo = response['sce_card_set_prices'][game];
+									priceTable += '<tr><td>' + sceInfo[0] + '</td><td>' + steamlvlupPrices[game] + '</td><td>' + sceInfo[1] + '</td></tr>';
 								}
 							}
 							

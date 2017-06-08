@@ -29,7 +29,7 @@
 	</head>
 	<body>
 		<h1>Steam Card Exchange Price Checker</h1>
-		<h2>Note to self: Update functions dealing with sce to reflect new sce site design</h2>
+		
 		<p><b>Last update: </b>{{ update_time }}</p>
 		<br>
 		<p><a href="{{ url_for('index') }}">Home</a></p>
@@ -55,6 +55,7 @@
 		<input type = "text" id = "Price Status" onkeyup = "filter()" placeholder = "Filter by Price Status...">
 		<br>
 		<br>
+		
 		<table id = "scePrices" class = "tablesorter" border = "1">
 			<thead>
 				<tr>
@@ -65,12 +66,20 @@
 				</tr>
 			</thead>
 			<tbody>
-				{% for game, curr_price in curr_prices | dictsort(case_sensitive = False, by = 'value') %}
-					{% if game in prev_prices %}
-						{% set prev_price = prev_prices[game] %}
+				{% for app_id, game_info in curr_prices | dictsort(case_sensitive = False, by = 'value') %}
+					{% if not prev_prices %}
+						{% set prev_price = "None" %}
+					{% elif app_id in prev_prices %}
+						{% if prev_prices is mapping %}
+							{% set prev_price = prev_prices[app_id][1] %}
+						{% else %}
+							{% set prev_price = prev_prices[app_id] %}
+						{% endif %}
 					{% else %}
 						{% set prev_price = "None" %}
 					{% endif %}
+					
+					{% set curr_price = game_info[1] %}
 					
 					{% if (prev_price == "None") or (curr_price|int == prev_price|int) %}
 						{% set price_change_status = "" %}
@@ -83,7 +92,7 @@
 						{% set background_color = "#ffa3a3" %}
 					{% endif %}
 					<tr style = "background-color: {{ background_color }}">
-						<td>{{ game }}</td>
+						<td>{{ game_info[0] }}</td>
 						<td>{{ curr_price }}</td>
 						<td>{{ prev_price }}</td>
 						<td>{{ price_change_status }}</td>

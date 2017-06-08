@@ -70,7 +70,9 @@
 									{
 										if (response.hasOwnProperty(game))
 										{
-											priceTable += '<tr><td>' + game + '</td><td>' + response[game][0] + '</td><td>' + response[game][1] + '</td></tr>';
+											var currGame = response[game];
+											var sceInfo = currGame[0];
+											priceTable += '<tr><td>' + sceInfo[0] + '</td><td>' + sceInfo[1] + '</td><td>' + currGame[1] + '</td></tr>';
 										}
 									}
 									
