@@ -70,10 +70,10 @@
 					{% if not prev_prices %}
 						{% set prev_price = "None" %}
 					{% elif app_id in prev_prices %}
-						{% if prev_prices is mapping %}
+						{% if prev_prices[app_id] is number %}
+							{% set prev_price = "None" %}
+						{% else %}							
 							{% set prev_price = prev_prices[app_id][1] %}
-						{% else %}
-							{% set prev_price = prev_prices[app_id] %}
 						{% endif %}
 					{% else %}
 						{% set prev_price = "None" %}

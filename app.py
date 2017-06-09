@@ -100,6 +100,8 @@ def update_postgres():
     prices_row = CardHistory.query.filter_by(label = 'prices').first()
 
     if prices_row:
+        updated_prev_info = {}
+        updated_curr_info = {}
         '''
         We only want to update prices_row.prev_info and prices_row.curr_info if:
          - we find a game in Steam Card Exchange that isn't already in our database
@@ -124,18 +126,17 @@ def update_postgres():
         '''
         for game in sce_inventory:
             live_from_sce = sce_inventory[game]
-            
-            if not prices_row.prev_info:
-                prices_row.prev_info = {}
 
             if game not in prices_row.curr_info:
-                prices_row.prev_info[game] = 0
-                prices_row.curr_info[game] = live_from_sce
+                updated_prev_info[game] = 0
+                updated_curr_info[game] = live_from_sce
                 
             elif prices_row.curr_info[game][1] != live_from_sce[1]:
-                prices_row.prev_info[game] = prices_row.curr_info[game]
-                prices_row.curr_info[game] = live_from_sce
+                updated_prev_info[game] = prices_row.curr_info[game]
+                updated_curr_info[game] = live_from_sce
         
+        prices_row.prev_info = updated_prev_info
+        prices_row.curr_info = updated_curr_info
         prices_row.last_update = update_time
     else:
         db.session.add(CardHistory('prices', sce_inventory, None, update_time))
