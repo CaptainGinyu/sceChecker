@@ -63,7 +63,10 @@
 										+ '<thead><tr>'
 										+ '<th>Game</th>'
 										+ '<th>Price</th>'
+										+ '<th>Set Price</th>'
 										+ '<th>Unique Cards</th>'
+										+ '<th>Cards in Set</th>'
+										+ '<th>% of Set</th>'
 										+ '</tr></thead><tbody>';
 									
 									for (var game in response)
@@ -72,7 +75,13 @@
 										{
 											var currGame = response[game];
 											var sceInfo = currGame[0];
-											priceTable += '<tr><td>' + sceInfo[0] + '</td><td>' + sceInfo[1] + '</td><td>' + currGame[1] + '</td></tr>';
+											
+											var uniqueCards = currGame[1];
+											var cardsInSet = sceInfo[2];
+											var percentageOfSet = Math.round(100 * uniqueCards / cardsInSet);
+											
+											priceTable += '<tr><td>' + sceInfo[0] + '</td><td>' + sceInfo[1] + '</td><td>' + sceInfo[3]
+												+ '</td><td>' + uniqueCards + '</td><td>' + cardsInSet + '</td><td>' + percentageOfSet + '%</td></tr>';
 										}
 									}
 									
