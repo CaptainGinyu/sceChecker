@@ -1,13 +1,10 @@
 import os
-import sys
 from flask import Flask, render_template, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 import requests
 import json
 import re
-import urllib.parse
-import math
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
