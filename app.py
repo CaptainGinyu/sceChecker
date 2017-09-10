@@ -11,19 +11,15 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
-class CardHistory(db.Model):
-    
-    __tablename__ = 'card_history'
-    label = db.Column(db.Text, primary_key = True, nullable = False)
-    curr_info = db.Column(db.JSON)
-    prev_info = db.Column(db.JSON)
-    last_update = db.Column(db.Text)
+class Favorites(db.Model):
 
-    def __init__(self, label, curr_info, prev_info, last_update):
-        self.label = label
-        self.curr_info = curr_info
-        self.prev_info = prev_info
-        self.last_update = last_update
+    __tablename__ = 'favorites'
+    steamid = db.Column(db.Text, primary_key = True, nullable = False)
+    username = db.Column(db.Text, nullable = False)
+
+    def __init__(self, steamid, username):
+        self.steamid = steamid
+        self.username = username
 
 #######################################################
 # Functions directly dealing with Steam Card Exchange #
@@ -84,61 +80,6 @@ def get_sce_inventory():
 #################
 # Miscellaneous #
 #################
-
-def update_postgres():
-
-    #Getting Steam Card Exchange inventory
-    sce_inventory = get_sce_inventory()
-
-    #Getting current time so that we can record what time we updated
-    update_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-
-    #Checking if there is an existing database entry for prices
-    prices_row = CardHistory.query.filter_by(label = 'prices').first()
-
-    if prices_row:
-        updated_prev_info = {}
-        updated_curr_info = {}
-        '''
-        We only want to update prices_row.prev_info and prices_row.curr_info if:
-         - we find a game in Steam Card Exchange that isn't already in our database
-        OR
-         - the price we are getting live from Steam Card Exchange is different
-        than the price in prices_row.curr_info
-
-        Example:
-
-        SCE price: 5
-        curr: 5
-        prev: 4
-        - Don't update -
-
-        SCE price: 6
-        curr: 5
-        prev: 4
-        - Update -
-        curr: 6
-        prev: 5
-        
-        '''
-        for game in sce_inventory:
-            live_from_sce = sce_inventory[game]
-
-            if game not in prices_row.curr_info:
-                updated_prev_info[game] = 0
-                updated_curr_info[game] = live_from_sce
-                
-            elif prices_row.curr_info[game][1] != live_from_sce[1]:
-                updated_prev_info[game] = prices_row.curr_info[game]
-                updated_curr_info[game] = live_from_sce
-        
-        prices_row.prev_info = updated_prev_info
-        prices_row.curr_info = updated_curr_info
-        prices_row.last_update = update_time
-    else:
-        db.session.add(CardHistory('prices', sce_inventory, None, update_time))
-
-    db.session.commit()
 
 def get_steam_inventory_cards(cards, steam_id, last_assetid, sce_inventory):
 
@@ -202,6 +143,26 @@ def get_steam_inventory_cards(cards, steam_id, last_assetid, sce_inventory):
 
     return result
 
+def add_to_favorites(steamid):
+
+    if Favorites.query.filter_by(steamid = steamid).first() == None:
+        db.session.add(Favorites(steamid, 'placeholder'))
+        db.session.commit()
+        print('added')
+
+def remove_from_favorites(steamid):
+
+    query = Favorites.query.filter_by(steamid = steamid).first()
+    
+    if query) != None:
+        db.session.delete(query)
+        db.session.commit()
+        print('removed')
+
+def get_all_favorites():
+
+    return Favorites.query.all()
+
 ###########
 # Routing #
 ###########
@@ -214,6 +175,7 @@ def steam_inventory_to_sce_prices():
     
     sce_inventory = get_sce_inventory()
     steam_id = request.form.get('steam_id')
+    add_to_favorites(steam_id)
 
     #Keys are game names, values are number of unique cards owned for a given game
     cards = {}
