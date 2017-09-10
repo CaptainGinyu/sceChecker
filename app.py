@@ -154,7 +154,7 @@ def remove_from_favorites(steamid):
 
     query = Favorites.query.filter_by(steamid = steamid).first()
     
-    if query) != None:
+    if query != None:
         db.session.delete(query)
         db.session.commit()
         print('removed')
