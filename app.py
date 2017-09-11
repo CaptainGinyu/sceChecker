@@ -81,6 +81,21 @@ def get_sce_inventory():
 # Miscellaneous #
 #################
 
+def get_steamid_from_profile(profile_url):
+
+    if not re.search('http.*://steamcommunity\.com/', profile_url):
+        return ''
+
+    profile = requests.get(profile_url)
+    if profile.status_code != 200:
+        return ''
+
+    profile_regex = re.search('g_rgProfileData.*"steamid":"([0-9]*)"', profile.text, re.MULTILINE)
+    if profile_regex:
+        return profile_regex.group(1)
+
+    return ''
+
 def get_steam_inventory_cards(cards, steam_id, last_assetid, sce_inventory):
 
     #Accessing inventory of the user with the passed in steam_id
@@ -143,26 +158,6 @@ def get_steam_inventory_cards(cards, steam_id, last_assetid, sce_inventory):
 
     return result
 
-def add_to_favorites(steamid):
-
-    if Favorites.query.filter_by(steamid = steamid).first() == None:
-        db.session.add(Favorites(steamid, 'placeholder'))
-        db.session.commit()
-        print('added')
-
-def remove_from_favorites(steamid):
-
-    query = Favorites.query.filter_by(steamid = steamid).first()
-    
-    if query != None:
-        db.session.delete(query)
-        db.session.commit()
-        print('removed')
-
-def get_all_favorites():
-
-    return Favorites.query.all()
-
 ###########
 # Routing #
 ###########
@@ -175,7 +170,8 @@ def steam_inventory_to_sce_prices():
     
     sce_inventory = get_sce_inventory()
     steam_id = request.form.get('steam_id')
-    add_to_favorites(steam_id)
+    if not steam_id.isdigit():
+        steam_id = get_steamid_from_profile(steam_id)
 
     #Keys are game names, values are number of unique cards owned for a given game
     cards = {}
@@ -188,6 +184,37 @@ def steam_inventory_to_sce_prices():
         cards, last_assetid = get_steam_inventory_cards(cards, steam_id, last_assetid, sce_inventory)
     
     return jsonify(cards)
+
+@app.route('/add_to_favorites', methods = ['POST'])
+def add_to_favorites():
+
+    steamid = request.form.get('steamid')
+
+    if (steamid == None) or (len(steamid) == 0):
+        return
+
+    if Favorites.query.filter_by(steamid = steamid).first() == None:
+        db.session.add(Favorites(steamid, 'placeholder'))
+        db.session.commit()
+
+@app.route('/remove_from_favorites', methods = ['POST'])
+def remove_from_favorites():
+
+    steamid = request.form.get('steamid')
+
+    if (steamid == None) or (len(steamid) == 0):
+        return
+
+    query = Favorites.query.filter_by(steamid = steamid).first()
+    
+    if query != None:
+        db.session.delete(query)
+        db.session.commit()
+
+@app.route('/get_all_favorites', methods = ['POST'])
+def get_all_favorites():
+
+    return jsonify(favorites = Favorites.query.all())
 
 @app.route('/steamlvluptosce', methods = ['GET', 'POST'])
 def steamlvluptosce():
