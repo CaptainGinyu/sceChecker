@@ -86,7 +86,10 @@ def get_steamid_from_profile(profile_url):
     if not re.search('http.*://steamcommunity\.com/', profile_url):
         return ''
 
-    profile = requests.get(profile_url)
+    try:
+        profile = requests.get(profile_url)
+    except:
+        return ''
     if profile.status_code != 200:
         return ''
 
@@ -257,8 +260,11 @@ def steamlvluptosce():
     #Going through the list of items from STEAMLVLUP
     for item in steamlvlup_items:
         app_id = str(item['appid'])
-        steamlvlup_prices[app_id] = item['set_price']
-        curr_game = sce_inventory[app_id]
+        try:
+            steamlvlup_prices[app_id] = item['set_price']
+            curr_game = sce_inventory[app_id]
+        except:
+            continue
         
         if app_id not in sce_inventory:
             sce_card_set_prices[app_id] = [curr_game[0], '?']
