@@ -260,11 +260,10 @@ def steamlvluptosce():
     #Going through the list of items from STEAMLVLUP
     for item in steamlvlup_items:
         app_id = str(item['appid'])
-        try:
-            steamlvlup_prices[app_id] = item['set_price']
-            curr_game = sce_inventory[app_id]
-        except:
+        if app_id not in sce_inventory.keys():
             continue
+        steamlvlup_prices[app_id] = item['set_price']
+        curr_game = sce_inventory[app_id]
         
         if app_id not in sce_inventory:
             sce_card_set_prices[app_id] = [curr_game[0], '?']
