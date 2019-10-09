@@ -229,7 +229,19 @@ def steamlvluptosce():
 
     #Navigating to the first page of results from STEAMLVLUP
     page = 0
-    steamlvlup_page = requests.get('https://steamlvlup.com/shop/items?hide_exist=false&page_size=999&page=' + str(page) + '&sort_by=price&sort_type=asc')
+    steamlvlup_page = requests.post('https://steamlvlup.com/store/load', data = {'hide_exist': 'false', 'page': str(page), 'page_size': '999'}, headers={'Accept': '*/*',
+        'Accept-Encoding': 'gzip, deflate, br',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Connection': 'keep-alive',
+        'Content-Length': '36',
+        'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+        'Cookie': 'sound=true; notify=false; _ga=GA1.2.1248393824.1552793063; _gid=GA1.2.2079134564.1552793063; _gat=1; XSRF-TOKEN=eyJpdiI6ImlkZ25Ua2Izb2pLdnk0Z0R3K0Y3Mmc9PSIsInZhbHVlIjoialMwa2RtY2h5OTdXTEdaU2pqaDVkRUdqVG41czRnejlQaHdpbWFUd3FqWU54dzI1c0RUVngxK3lOTEFuOFZNWCIsIm1hYyI6ImU2ODYyZTJjZGFhY2JmNTgwOTI4MDQxOTk0ZTE2MDdkODg1NzIzY2NhYWJlZDZmNGUwY2NkZTNlMGNmODZhZmQifQ%3D%3D; laravel_session=eyJpdiI6Inp0NVNuMktLZHorQ3hqMWQ1eVVLVHc9PSIsInZhbHVlIjoieDIxb3BtVXlNYnk3c0NET2t0WkFDekJjZ1krTGNWUzFWNEc0VEVremZ1bHlGMHE4M1lLZWNEQnByQnd2bXFrQSIsIm1hYyI6IjczNjhkMjZkMjI0NmJkMzVmNGQ0Y2I5MGM3ODVhYjMzZmQwNGRkNWMxMTRjYTI5Zjc5MjQwZDQxY2FkMzQyY2QifQ%3D%3D',
+        'Host': 'steamlvlup.com',
+        'Origin': 'https://steamlvlup.com',
+        'Referer': 'https://steamlvlup.com/',
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36',
+        'X-CSRF-TOKEN': 'Vz8xzvtZRD3VVbEBKIPab3yTX2LoEGpN1Uso2HA5',
+        'X-Requested-With': 'XMLHttpRequest'})
 
     #Case for when STEAMLVLUP site is having issues
     if steamlvlup_page.status_code != 200:
@@ -243,7 +255,19 @@ def steamlvluptosce():
     #Going through the rest of the pages of results
     while steamlvlup_count > 0:
         page += 1
-        steamlvlup_page = requests.get('https://steamlvlup.com/shop/items?hide_exist=false&page_size=999&page=' + str(page) + '&sort_by=price&sort_type=asc')
+        steamlvlup_page = requests.post('https://steamlvlup.com/store/load', data = {'hide_exist': 'false', 'page': str(page), 'page_size': '999'}, headers={'Accept': '*/*',
+            'Accept-Encoding': 'gzip, deflate, br',
+            'Accept-Language': 'en-US,en;q=0.9',
+            'Connection': 'keep-alive',
+            'Content-Length': '36',
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+            'Cookie': 'sound=true; notify=false; _ga=GA1.2.1248393824.1552793063; _gid=GA1.2.2079134564.1552793063; _gat=1; XSRF-TOKEN=eyJpdiI6ImlkZ25Ua2Izb2pLdnk0Z0R3K0Y3Mmc9PSIsInZhbHVlIjoialMwa2RtY2h5OTdXTEdaU2pqaDVkRUdqVG41czRnejlQaHdpbWFUd3FqWU54dzI1c0RUVngxK3lOTEFuOFZNWCIsIm1hYyI6ImU2ODYyZTJjZGFhY2JmNTgwOTI4MDQxOTk0ZTE2MDdkODg1NzIzY2NhYWJlZDZmNGUwY2NkZTNlMGNmODZhZmQifQ%3D%3D; laravel_session=eyJpdiI6Inp0NVNuMktLZHorQ3hqMWQ1eVVLVHc9PSIsInZhbHVlIjoieDIxb3BtVXlNYnk3c0NET2t0WkFDekJjZ1krTGNWUzFWNEc0VEVremZ1bHlGMHE4M1lLZWNEQnByQnd2bXFrQSIsIm1hYyI6IjczNjhkMjZkMjI0NmJkMzVmNGQ0Y2I5MGM3ODVhYjMzZmQwNGRkNWMxMTRjYTI5Zjc5MjQwZDQxY2FkMzQyY2QifQ%3D%3D',
+            'Host': 'steamlvlup.com',
+            'Origin': 'https://steamlvlup.com',
+            'Referer': 'https://steamlvlup.com/',
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/72.0.3626.121 Safari/537.36',
+            'X-CSRF-TOKEN': 'Vz8xzvtZRD3VVbEBKIPab3yTX2LoEGpN1Uso2HA5',
+            'X-Requested-With': 'XMLHttpRequest'})
 
         #Case for when STEAMVLUP site happens to error out in the middle of us looking through it
         if steamlvlup_page.status_code != 200:

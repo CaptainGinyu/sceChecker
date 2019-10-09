@@ -82,7 +82,8 @@
 					{
 						$("#steamlvlupToSce").html('<p>Server-side code has issues.</p>');
 					}
-				});
+				})
+				.fail(function(){$("#steamlvlupToSce").html('<p>Server-side code has issues.</p>');});;
 			}
 		
 			$(document).ready(

@@ -91,7 +91,8 @@
 								$("#submitButton").prop("disabled", false);
 								$("#submitButton").html("Get Steam Card Exchange Prices");
 								$("#prices").tablesorter();
-							});
+							})
+							.fail(function(){$("#inventoryToSce").html('<p>Server-side code has issues.</p>');});
 						}
 					);
 				}
