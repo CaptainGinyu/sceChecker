@@ -30,7 +30,7 @@ def get_sce_inventory():
     inventory = {}
 
     #Accessing Steam Card Exchange
-    sce = requests.get('http://www.steamcardexchange.net/api/request.php?GetInventory&_=1496541700233')
+    sce = requests.get('www.steamcardexchange.net/api/request.php?GetInventory&_=1601789275852')
     if sce.status_code != 200:
         return inventory
 
