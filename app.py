@@ -29,7 +29,7 @@ def get_sce_inventory():
 
     inventory = {}
 
-    #Accessing Steam Card Exchange
+    #Accessing Steam Card Exchange (NOTE: No longer works on Heroku... it seems sce is blocking connections from Heroku)
     sce = requests.get('https://www.steamcardexchange.net/api/request.php?GetInventory&_=1601789275852')
     if sce.status_code != 200:
         return inventory
